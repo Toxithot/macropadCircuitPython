@@ -1,75 +1,49 @@
 import time
 import usb_hid
+import board
+import digitalio
 from adafruit_hid.keycode import Keycode
 from adafruit_hid.keyboard import Keyboard
 from adafruit_hid.consumer_control import ConsumerControl
 from adafruit_hid.consumer_control_code import ConsumerControlCode
-import board
-import digitalio
 import rotaryio
 
-button = digitalio.DigitalInOut(board.GP32)
-button.direction = digitalio.Direction.INPUT
-button.pull = digitalio.Pull.UP
-
-encoder = rotaryio.IncrementalEncoder(board.GP31, board.GP29)
-
-cc = ConsumerControl(usb_hid.devices)
-
-button_state = None
-last_position = encoder.position
-
-while True:
-    current_position = encoder.position
-    position_change = current_position - last_position
-    if position_change > 0:
-        for _ in range(position_change):
-            cc.send(ConsumerControlCode.VOLUME_INCREMENT)
-        print(current_position)
-    elif position_change < 0:
-        for _ in range(-position_change):
-            cc.send(ConsumerControlCode.VOLUME_DECREMENT)
-        print(current_position)
-    last_position = current_position
-    if not button.value and button_state is None:
-        button_state = "pressed"
-    if button.value and button_state == "pressed":
-        print("Button pressed.")
-        cc.send(ConsumerControlCode.PLAY_PAUSE)
-        button_state = None
-
-btn1_pin = board.GP16
-btn2_pin = board.GP18
-btn3_pin = board.GP20
-btn4_pin = board.GP22
-btn5_pin = board.GP25
-btn6_pin = board.GP27
-
-btn1 = digitalio.DigitalInOut(btn1_pin)
+btn1 = digitalio.DigitalInOut(board.GP21)
 btn1.direction = digitalio.Direction.INPUT
 btn1.pull = digitalio.Pull.DOWN
 
-btn2 = digitalio.DigitalInOut(btn2_pin)
+btn2 = digitalio.DigitalInOut(board.GP19)
 btn2.direction = digitalio.Direction.INPUT
 btn2.pull = digitalio.Pull.DOWN
 
-btn3 = digitalio.DigitalInOut(btn3_pin)
+btn3 = digitalio.DigitalInOut(board.GP17)
 btn3.direction = digitalio.Direction.INPUT
 btn3.pull = digitalio.Pull.DOWN
 
-btn4 = digitalio.DigitalInOut(btn4_pin)
+btn4 = digitalio.DigitalInOut(board.GP20)
 btn4.direction = digitalio.Direction.INPUT
 btn4.pull = digitalio.Pull.DOWN
 
-btn5 = digitalio.DigitalInOut(btn5_pin)
+btn5 = digitalio.DigitalInOut(board.GP18)
 btn5.direction = digitalio.Direction.INPUT
 btn5.pull = digitalio.Pull.DOWN
 
-btn6 = digitalio.DigitalInOut(btn6_pin)
+btn6 = digitalio.DigitalInOut(board.GP16)
 btn6.direction = digitalio.Direction.INPUT
 btn6.pull = digitalio.Pull.DOWN
 
+button = digitalio.DigitalInOut(board.GP28)
+button.direction = digitalio.Direction.INPUT
+button.pull = digitalio.Pull.UP
+
+encoder = rotaryio.IncrementalEncoder(board.GP27, board.GP26)
+
+cc = ConsumerControl(usb_hid.devices)
+
 keyboard = Keyboard(usb_hid.devices)
+
+button_state = None
+last_position = encoder.position
 
 while True:
     if btn1.value:
@@ -91,3 +65,20 @@ while True:
         keyboard.send(Keycode.CONTROL, Keycode.F12)
         time.sleep(0.1)
     time.sleep(0.1)
+    current_position = encoder.position
+    position_change = current_position - last_position
+    if position_change > 0:
+        for _ in range(position_change):
+            cc.send(ConsumerControlCode.VOLUME_INCREMENT)
+        print(current_position)
+    elif position_change < 0:
+        for _ in range(-position_change):
+            cc.send(ConsumerControlCode.VOLUME_DECREMENT)
+        print(current_position)
+    last_position = current_position
+    if not button.value and button_state is None:
+        button_state = "pressed"
+    if button.value and button_state == "pressed":
+        print("Button pressed.")
+        cc.send(ConsumerControlCode.PLAY_PAUSE)
+        button_state = None
